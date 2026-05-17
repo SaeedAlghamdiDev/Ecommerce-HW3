@@ -2,21 +2,27 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
-function GetGradePage({ studentNumber, onStudentNumberChange, grades, error, loading, onSubmit }) {
+function GetGradePage({ error, loading, onSubmit }) {
 
-  const [gradess, setGrades] = useState([]);
+  const [grades, setGrades] = useState([]);
+  const [studentNumber, setStudentNumber] = useState();
+
+  const handleStundentNumber = (event) => {
+    setStudentNumber(event.target.value);
+  }
 
 
   useEffect(() => {
-    axios.get("http://localhost:8000/getgrades").then((response) => {
+    axios.get(`http://localhost:8000/getgrades/${studentNumber}`).then((response) => {
 
+      console.log(response.data)
       setGrades(response.data);
-      console.log(response.data);
+      
 
     }).catch((error) => {
       console.log(error);
     })
-  }, []
+  }, [studentNumber]
   )
 
 
@@ -30,12 +36,12 @@ function GetGradePage({ studentNumber, onStudentNumberChange, grades, error, loa
           <input
             type="text"
             value={studentNumber}
-            onChange={(event) => onStudentNumberChange(event.target.value)}
+            onChange={handleStundentNumber}
             placeholder="1 - 5"
             maxLength={1}
           />
         </label>
-        <button type="submit">Get Grades</button>
+        
       </form>
 
       {error && <div className="message error">{error}</div>}
@@ -43,7 +49,10 @@ function GetGradePage({ studentNumber, onStudentNumberChange, grades, error, loa
 
       {grades.length > 0 && (
         <div className="result-panel">
-          <h3>Student {studentNumber} Grades</h3>
+          <h1>Grades</h1>
+          <h3>Student ID: {grades.at(1).id} <br/>
+          Student Name: {grades.at(1).name}</h3>
+          
           <table>
             <thead>
               <tr>
@@ -54,8 +63,8 @@ function GetGradePage({ studentNumber, onStudentNumberChange, grades, error, loa
             <tbody>
               {grades.map((grade, index) => (
                 <tr key={index}>
-                  <td>{grade.course}</td>
-                  <td>{grade.mark}</td>
+                  <td>{grade["course code"]}</td>
+                  <td>{grade.grade}</td>
                 </tr>
               ))}
             </tbody>
@@ -64,6 +73,7 @@ function GetGradePage({ studentNumber, onStudentNumberChange, grades, error, loa
       )}
 
       {grades.length === 0 && !loading && !error && <p>No grades to show yet.</p>}
+    
     </section>
   )
 }

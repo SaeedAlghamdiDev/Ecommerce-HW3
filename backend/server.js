@@ -26,14 +26,15 @@ app.get('/', (req, res) => {
     res.send("I should have memorized this by now");
 });
 
-app.get('/getgrades', (req, res) => {
-
-    pool.query("select * from students", (err, result) => {
+app.get('/getgrades/:studentNumber', (req, res) => {
+    const studentNumber = req.params.studentNumber;
+    pool.query("select students.id, students.name, courses.code AS \`course code\`, grades.grade from grades join students on grades.id = students.id join courses on grades.code = courses.code where students.id = ?" , [studentNumber], (err, result) => {
 
         if (err) {
             return console.log(err);
-        } else
-            return res.json(result)
+        } else{
+            
+            return res.json(result)}
     }    );
 });
 
