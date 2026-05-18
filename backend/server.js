@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 
 app.get('/getgrades/:studentNumber', (req, res) => {
     const studentNumber = req.params.studentNumber;
-    pool.query("select students.id, students.name, courses.code AS \`course code\`, grades.grade from grades join students on grades.id = students.id join courses on grades.code = courses.code where students.id = ?" , [studentNumber], (err, result) => {
+    pool.query("select students.id, students.name, courses.code AS \`course code\`, grades.grade from students left join grades on grades.id = students.id left join courses on grades.code = courses.code where students.id = ?" , [studentNumber], (err, result) => {
 
         if (err) {
             return console.log(err);
@@ -38,6 +38,41 @@ app.get('/getgrades/:studentNumber', (req, res) => {
     }    );
 });
 
+app.post('/addgrade', (req, res) => {
+    const { studentNumber, courseCode, grade } = req.body;
+
+    if (!studentNumber || !courseCode) {
+        return res.status(400).json({ error: "Student number and course code are required" });
+    }
+
+    
+    if (grade === "DELETE" || grade === null) {
+        pool.query(
+            "DELETE FROM grades WHERE id = ? AND code = ?",
+            [studentNumber, courseCode],
+            (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({ error: "Database error" });
+                }
+                return res.json({ success: true, message: "Grade deleted" });
+            }
+        );
+    } else {
+        
+        pool.query(
+            "INSERT INTO grades (id, code, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = ?",
+            [studentNumber, courseCode, grade, grade],
+            (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({ error: "Database error" });
+                }
+                return res.json({ success: true, message: "Grade updated successfully" });
+            }
+        );
+    }
+});
 
 
 app.listen(8000, () => {

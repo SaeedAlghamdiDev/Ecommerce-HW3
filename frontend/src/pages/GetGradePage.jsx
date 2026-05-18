@@ -11,6 +11,7 @@ function GetGradePage({ error, loading, onSubmit }) {
     setStudentNumber(event.target.value);
   }
 
+ 
 
   useEffect(() => {
     axios.get(`http://localhost:8000/getgrades/${studentNumber}`).then((response) => {
@@ -50,25 +51,28 @@ function GetGradePage({ error, loading, onSubmit }) {
       {grades.length > 0 && (
         <div className="result-panel">
           <h1>Grades</h1>
-          <h3>Student ID: {grades.at(1).id} <br/>
-          Student Name: {grades.at(1).name}</h3>
+          <h3>Student ID: {grades[0].id} <br/>
+          Student Name: {grades[0].name}</h3>
           
-          <table>
-            <thead>
-              <tr>
-                <th>Course</th>
-                <th>Mark</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grades.map((grade, index) => (
-                <tr key={index}>
-                  <td>{grade["course code"]}</td>
-                  <td>{grade.grade}</td>
+          {grades.some(grade => grade.grade) && (
+            <table>
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Mark</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {grades.filter(grade => grade.grade).map((grade, index) => (
+                  <tr key={index}>
+                    <td>{grade["course code"]}</td>
+                    <td>{grade.grade}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {!grades.some(grade => grade.grade) && <p>No grades recorded for this student.</p>}
         </div>
       )}
 
